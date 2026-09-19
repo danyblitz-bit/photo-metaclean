@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photo MetaClean — Remove Hidden EXIF & GPS from Photos</title>
+<meta name="description" content="Photo MetaClean strips sensitive metadata (GPS coordinates, camera model, timestamps) from JPEG and PNG files with one CLI command. Byte-level removal, no quality loss, verified by a built-in self-check.">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; background: #0d1117; color: #e6edf3; line-height: 1.6; }
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+  header { padding: 80px 0 40px; text-align: center; }
+  header h1 { font-size: 3rem; background: linear-gradient(135deg, #58a6ff, #f0883e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  header p { font-size: 1.2rem; color: #8b949e; max-width: 620px; margin: 16px auto; }
+  .badge { display: inline-block; background: #21262d; border: 1px solid #30363d; border-radius: 6px; padding: 4px 12px; margin: 4px; font-size: 0.85rem; color: #8b949e; }
+  .cta { margin-top: 32px; }
+  .btn { display: inline-block; background: #238636; color: #fff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-size: 1.1rem; font-weight: 600; }
+  .btn:hover { background: #2ea043; }
+  .btn.secondary { background: #1f6feb; margin-left: 12px; }
+  .btn.secondary:hover { background: #388bfd; }
+  .features { padding: 60px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+  .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 28px; }
+  .card h3 { color: #58a6ff; margin-bottom: 12px; }
+  .card p { color: #8b949e; font-size: 0.95rem; }
+  section h2 { margin: 40px 0 24px; color: #f0883e; font-size: 1.6rem; }
+  code { background: #21262d; padding: 2px 8px; border-radius: 4px; color: #79c0ff; font-size: 0.9em; }
+  .usage-steps { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 32px; }
+  .usage-steps ol { padding-left: 20px; color: #8b949e; }
+  .usage-steps li { margin-bottom: 12px; }
+  footer { padding: 40px 0; text-align: center; color: #484f58; font-size: 0.85rem; border-top: 1px solid #21262d; margin-top: 60px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1>Photo MetaClean</h1>
+    <p>Your phone silently tags every photo with GPS, camera model and timestamps. Photo MetaClean strips them before you share — no re-encode, no quality loss, no cloud.</p>
+    <div>
+      <span class="badge">Python</span>
+      <span class="badge">CLI</span>
+      <span class="badge">Privacy</span>
+      <span class="badge">Zero Dependencies</span>
+      <span class="badge">MIT License</span>
+    </div>
+    <div class="cta">
+      <a class="btn" href="https://github.com/danyblitz-bit/photo-metaclean">View on GitHub</a>
+      <a class="btn secondary" href="https://danyblitz.gumroad.com/l/zjkam">Get the DevTools Bundle</a>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <section class="features">
+    <div class="card">
+      <h3>Audit Hidden Metadata</h3>
+      <p>A smartphone photo can reveal your exact location, camera model and capture time. See exactly what leaks before you share it.</p>
+    </div>
+    <div class="card">
+      <h3>GPS Stripping</h3>
+      <p>Removes the GPS IFD with latitude and longitude from JPEG EXIF. The extension and coordinate tags are gone at the byte level.</p>
+    </div>
+    <div class="card">
+      <h3>No Re-encode, No Quality Loss</h3>
+      <p>Rewrites the container and drops the metadata segments. Pixel data is copied byte-for-byte — a photo stays a photo, just without the hidden payload.</p>
+    </div>
+    <div class="card">
+      <h3>Verified by Self-Check</h3>
+      <p><code>--self-check</code> builds a synthetic image with EXIF, GPS and comments, strips it, and asserts nothing survived.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Quick Start</h2>
+    <div class="usage-steps">
+      <ol>
+        <li><code>pip install -r requirements.txt</code> — actually, nothing to install: this is 100% Python standard library.</li>
+        <li><code>python -m tools.photo-metaclean photo.jpg --verbose</code> — see what's hidden in your photo.</li>
+        <li><code>python -m tools.photo-metaclean photo.jpg --clean</code> — write a sanitized copy as <code>photo_clean.jpg</code>.</li>
+        <li><code>python -m tools.photo-metaclean --self-check</code> — verify the tool works on your machine.</li>
+      </ol>
+    </div>
+  </section>
+
+  <footer>
+    <p>Photo MetaClean — MIT licensed · Built for Survive suite · Report issues via the tool email draft or GitHub issues</p>
+  </footer>
+</div>
+</body>
+</html>

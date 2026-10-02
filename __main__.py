@@ -28,7 +28,8 @@ def jpeg_segment_kind(marker: int, payload: bytes):
         return "COMMENT", payload.decode("latin-1", "replace")[:200]
     if marker == 0xE1:
         if payload.startswith(b"Exif\x00\x00"):
-            return "EXIF", decode_exif(payload)
+            info = decode_exif(payload)
+            return ("EXIF", info) if info else None
         if payload.startswith(b"http://ns.adobe.com/xap/1.0/\x00"):
             return "XMP", "XMP metadata present"
         return None
@@ -119,6 +120,34 @@ def decode_exif(payload: bytes) -> dict:
     return out
 
 
+def read_orientation(payload: bytes):
+    """Orientation (IFD0 0x0112) from an APP1 payload, or None."""
+    t = payload[6:]
+    if len(t) < 8 or t[:2] not in (b"II", b"MM"):
+        return None
+    e = "<" if t[:2] == b"II" else ">"
+    if t[2:4] not in (b"*\x00", b"\x00*"):
+        return None
+    base = struct.unpack(e + "I", t[4:8])[0]
+    entry = read_ifd(t, e, base).get(0x0112)
+    if not entry:
+        return None
+    val = get_value(t, e, entry[0], entry[1], entry[2])
+    if not isinstance(val, (bytes, bytearray)) or not val:
+        return None
+    if len(val) >= 2:
+        return struct.unpack(e + "H", val[:2])[0]
+    return val[0]
+
+
+def minimal_exif_app1(orientation: int) -> bytes:
+    """APP1 carrying nothing but Orientation: display rotation survives, pixels stay untouched."""
+    tiff = b"II*\x00" + struct.pack("<I", 8) + struct.pack("<H", 1)
+    tiff += struct.pack("<HHI", 0x0112, 3, 1) + struct.pack("<H", orientation) + b"\x00\x00"
+    tiff += struct.pack("<I", 0)
+    return b"Exif\x00\x00" + tiff
+
+
 def parse_jpeg(raw: bytes):
     found = []
     if raw[:2] != b"\xff\xd8":
@@ -142,6 +171,10 @@ def parse_jpeg(raw: bytes):
             kind_desc = jpeg_segment_kind(marker, payload)
             if kind_desc:
                 found.append(kind_desc)
+                if marker == 0xE1 and payload.startswith(b"Exif\x00\x00"):
+                    orientation = read_orientation(payload)
+                    if orientation and orientation != 1:
+                        kept += jpeg_seg(0xE1, minimal_exif_app1(orientation))
             else:
                 kept += raw[i:i + 2 + length]
             i += 2 + length
@@ -302,6 +335,27 @@ def self_check() -> int:
     assert b"entropy-escaped" in cleaned, "entropy data damaged"
     assert dict(parse_jpeg(cleaned)[1]) == {}, "re-audit not clean"
 
+    # Orientation must survive: dropping APP1 outright turns phone photos sideways.
+    rot = (
+        b"\xff\xd8"
+        + jpeg_seg(0xE1, minimal_exif_app1(6))
+        + b"\xff\xda\x00\x08\x01\x01\x00\x00\x3f\x00"
+        + b"rotated \xff\x00\xfe data"
+        + b"\xff\xd9"
+    )
+    rot_clean, rot_meta = parse_jpeg(rot)
+    assert rot_clean[2:4] == b"\xff\xe1", "orientation segment dropped"
+    seg_len = struct.unpack(">H", rot_clean[4:6])[0]
+    assert read_orientation(rot_clean[6:6 + seg_len - 2]) == 6, "orientation value lost"
+    assert rot_meta == [], rot_meta
+    assert parse_jpeg(rot_clean)[1] == [], "orientation-only re-audit not clean"
+    assert b"rotated" in rot_clean and rot_clean.endswith(b"\xff\xd9"), "scan data damaged"
+
+    # big-endian TIFF: PIL writes MM, and Orientation must not read back as 0
+    be = b"MM\x00\x2a" + struct.pack(">I", 8) + struct.pack(">H", 1)
+    be += struct.pack(">HHI", 0x0112, 3, 1) + struct.pack(">HH", 8, 0) + struct.pack(">I", 0)
+    assert read_orientation(b"Exif\x00\x00" + be) == 8, "big-endian orientation misread"
+
     png = (
         PNG_SIG
         + b"\x00\x00\x00\x0dIHDR" + b"\x00\x00\x00\x08\x00\x00\x00\x08\x08\x02\x00\x00\x00" + b"\x00\x00\x00\x00"
@@ -329,7 +383,7 @@ def self_check() -> int:
         res2 = clean(p, out2)
         assert res2["cleaned"]
         assert not audit(out2)["has_metadata"]
-    print("self-check OK: EXIF/GPS/comment stripped from JPEG, text/time from PNG, pixels preserved")
+    print("self-check OK: EXIF/GPS/comment stripped from JPEG, Orientation kept, text/time from PNG, pixels preserved")
     return 0
 
 

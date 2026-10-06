@@ -1,3 +1,22 @@
+Metadata-Version: 2.4
+Name: photo-metaclean
+Version: 1.1.0
+Summary: Remove hidden EXIF/GPS metadata from JPEG/PNG at the byte level — no re-encoding, no quality loss.
+Author: Danilo Fortunato
+License-Expression: MIT
+Project-URL: Homepage, https://danyblitz-bit.github.io/photo-metaclean/
+Project-URL: Repository, https://github.com/danyblitz-bit/photo-metaclean
+Project-URL: Bug Tracker, https://github.com/danyblitz-bit/photo-metaclean/issues
+Keywords: exif,gps,metadata,privacy,jpeg,png,strip,cli
+Classifier: Programming Language :: Python :: 3
+Classifier: Environment :: Console
+Classifier: Topic :: Multimedia :: Graphics
+Classifier: Topic :: Security
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: End Users/Desktop
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+
 # Photo MetaClean
 
 Remove sensitive metadata from JPEG and PNG images before you share them. One command, three modes.
@@ -8,27 +27,27 @@ Every photo taken with a smartphone quietly carries **GPS coordinates, camera mo
 
 ## Install & Run
 
-`pip install photo-metaclean` — zero dependencies, Python standard library only.
+Zero dependencies — Python standard library only.
 
 ```bash
 # Inspect what's hidden in an image
-photometaclean photo.jpg
+python -m tools.photo-metaclean photo.jpg
 
 # See the full metadata list (GPS, camera, timestamps)
-photometaclean photo.jpg --verbose
+python -m tools.photo-metaclean photo.jpg --verbose
 
 # Write a sanitized copy
-photometaclean photo.jpg --clean
+python -m tools.photo-metaclean photo.jpg --clean
 # -> photo_clean.jpg
 
 # Overwrite the original
-photometaclean photo.jpg --in-place
+python -m tools.photo-metaclean photo.jpg --in-place
 
 # Verify the tool works on your machine
-photometaclean --self-check
+python -m tools.photo-metaclean --self-check
 ```
 
-Works with multiple files at once: `photometaclean *.jpg --clean`.
+Works with multiple files at once: `python -m tools.photo-metaclean *.jpg --clean`.
 
 ## Options
 
@@ -60,7 +79,7 @@ Photo MetaClean is free and open source. Like it?
 Found a bug or something weird? Run:
 
 ```bash
-photometaclean --report
+python -m tools.photo-metaclean --report
 ```
 
 This opens a pre-filled email. Send it and I'll get notified automatically.

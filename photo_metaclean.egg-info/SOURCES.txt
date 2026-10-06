@@ -1,0 +1,11 @@
+README.md
+__init__.py
+__main__.py
+pyproject.toml
+./__init__.py
+./__main__.py
+photo_metaclean.egg-info/PKG-INFO
+photo_metaclean.egg-info/SOURCES.txt
+photo_metaclean.egg-info/dependency_links.txt
+photo_metaclean.egg-info/entry_points.txt
+photo_metaclean.egg-info/top_level.txt
